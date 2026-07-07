@@ -90,6 +90,12 @@ Ce fichier documente les choix faits pour des points non couverts explicitement 
 - **Choix** : `EventDetailScreen` gère les deux cas (actif/grâce/archivé) plutôt que deux écrans séparés, en s'appuyant sur `event.status` pour afficher le bandeau "Terminé", verrouiller le composeur, et masquer le bouton d'ajout de médias une fois `ARCHIVED`.
 - **Raison** : le brief lui-même décrit l'écran archivé comme "même structure que l'événement actif" (section 2, point 7) — dupliquer l'écran aurait introduit une divergence à maintenir sans bénéfice.
 
+## 2026-07-07 — Support Expo Web ajouté (prévisualisation uniquement)
+
+- **Constat** : `"main": "node_modules/expo/AppEntry.js"` casse la résolution de bundle dans un monorepo npm workspaces (les dépendances sont hissées à la racine, pas dans `apps/mobile/node_modules`), ce qui empêchait même `expo start --web` de démarrer.
+- **Choix** : `main` pointe maintenant vers un `index.js` local (`registerRootComponent(App)`), et `react-dom`/`react-native-web`/`@expo/metro-runtime` sont ajoutés pour permettre `npm run web`. Utilisé ici pour valider visuellement les écrans (captures d'écran) sans simulateur iOS/Android disponible dans cet environnement.
+- **Portée** : la cible produit reste iOS/Android natif (`expo start --ios`/`--android`) ; le mode web est un outil de vérification/démo, pas une plateforme livrée.
+
 ---
 
 *Ce fichier sera complété au fil du développement.*
