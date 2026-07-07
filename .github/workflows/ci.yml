@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm install
+      - run: npm run prisma:generate --workspace=apps/backend
+      - run: npm run lint --workspace=apps/backend
+      - run: npm run typecheck --workspace=apps/backend
+      - run: npm test --workspace=apps/backend
+
+  mobile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm install
+      - run: npm run lint --workspace=apps/mobile
+      - run: npm run typecheck --workspace=apps/mobile

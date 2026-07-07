@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Tribu",
+    "slug": "tribu",
+    "scheme": "tribu",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#7C6FE0"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.tribu.app"
+    },
+    "android": {
+      "package": "com.tribu.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#7C6FE0"
+      }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Tribu a besoin d'accéder à tes photos pour les partager dans la galerie de l'événement."
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:3000"
+    }
+  }
+}
