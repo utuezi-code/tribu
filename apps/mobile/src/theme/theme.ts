@@ -1,40 +1,47 @@
 /**
- * Valeurs extraites des maquettes haute-fidélité fournies (captures d'écran).
- * Toute valeur non déductible des maquettes (ex: nuances de gris intermédiaires,
- * élévation des ombres) est une estimation raisonnable à ajuster si un design
- * system détaillé (tokens Figma) est fourni ultérieurement.
+ * Palette repensée d'après les patterns UI/UX de WhatsApp (couleur dominante
+ * verte) et le choix explicite d'une couleur "psychologiquement engageante"
+ * pour la rétention — voir DECISIONS.md pour la justification complète.
+ * Reste un vert propre à Tribu (pas un clone exact de #25D366) : même famille
+ * chromatique et mêmes associations (calme, "go", faible fatigue oculaire
+ * en usage prolongé) sans être une copie littérale de la marque WhatsApp.
  */
 export const colors = {
-  background: "#F5F2FB",
+  background: "#F5F8F6",
   surface: "#FFFFFF",
-  primary: "#7B6EF6",
-  primaryDark: "#5F4FE0",
-  primaryLight: "#EDE9FE",
-  text: "#1F1B2E",
-  textSecondary: "#6B6580",
-  textMuted: "#9C97AE",
-  border: "#E7E2F5",
-  success: "#2FBF71",
-  successLight: "#E4F8ED",
+  primary: "#1DB876",
+  primaryDark: "#128C5E",
+  primaryLight: "#DFF6EA",
+  text: "#16211C",
+  textSecondary: "#5B6B63",
+  textMuted: "#8A9791",
+  border: "#E2E8E4",
+  success: "#1DB876",
+  successLight: "#DFF6EA",
   danger: "#E5484D",
-  bubbleSent: "#7B6EF6",
+  // Distinct de `primary`/`success` (les deux verts) : nécessaire pour que le
+  // badge "En planification" reste visuellement différent du badge "Terminé"
+  // maintenant que la couleur de marque et la couleur de succès sont unifiées.
+  planning: "#B45309",
+  planningLight: "#FEF3C7",
+  bubbleSent: "#D9F5DD",
   bubbleReceived: "#FFFFFF",
-  overlayDark: "rgba(20, 16, 40, 0.55)",
+  overlayDark: "rgba(10, 20, 16, 0.55)",
   avatarPalette: ["#F2A7B0", "#8CD8C8", "#9FB4F2", "#F4C88A", "#C9A6F2", "#7FD1E0"],
-  gradientAuth: ["#8F7CFA", "#6D5AF0", "#4C3ED9"],
-  glow: "rgba(123, 110, 246, 0.35)",
+  gradientAuth: ["#34D399", "#1DB876", "#0F7A52"],
+  glow: "rgba(29, 184, 118, 0.35)",
 } as const;
 
 export const shadows = {
   soft: {
-    shadowColor: "#3B2E7E",
+    shadowColor: "#0B3D2A",
     shadowOpacity: 0.12,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 8 },
     elevation: 4,
   },
   button: {
-    shadowColor: "#5F4FE0",
+    shadowColor: "#128C5E",
     shadowOpacity: 0.35,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 10 },

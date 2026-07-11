@@ -3,8 +3,8 @@ import { colors, radii, spacing } from "../theme/theme";
 import type { EventStatus } from "../types/models";
 
 const CONFIG: Record<EventStatus, { label: string; bg: string; fg: string }> = {
-  ACTIVE: { label: "En planification", bg: colors.primaryLight, fg: colors.primaryDark },
-  GRACE_PERIOD: { label: "En planification", bg: colors.primaryLight, fg: colors.primaryDark },
+  ACTIVE: { label: "En planification", bg: colors.planningLight, fg: colors.planning },
+  GRACE_PERIOD: { label: "En planification", bg: colors.planningLight, fg: colors.planning },
   ARCHIVED: { label: "Terminé", bg: colors.successLight, fg: colors.success },
 };
 

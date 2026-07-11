@@ -151,6 +151,16 @@ Ce fichier documente les choix faits pour des points non couverts explicitement 
   - `MediaGallery` : la taille des vignettes de la grille était calculée une seule fois via `Dimensions.get("window")` au chargement du module ; remplacé par `useWindowDimensions()` (recalcul réactif, utile en cas de rotation ou de redimensionnement multi-fenêtre Android).
 - **Vérification** : balayage automatisé de tous les écrans à 320px de large (le plus petit format réaliste) confirmant l'absence de tout débordement horizontal (`scrollWidth === clientWidth` partout), captures à l'appui.
 
+## 2026-07-11 — Pivot de marque : palette violette → verte façon WhatsApp (demande explicite)
+
+- **Constat** : demande explicite de l'utilisateur de s'inspirer de l'UI/UX de WhatsApp et d'utiliser des couleurs "psychologiquement engageantes pour la rétention". Ceci annule le violet des maquettes d'origine (section 2 du brief : "implémente le design fourni, ne réinvente pas") — signalé ici car c'est un revirement complet par rapport à la source de vérité initiale, mais l'instruction directe et récente de l'utilisateur prime.
+- **Choix de couleur** : vert émeraude (`primary: #1DB876`) plutôt qu'un clone exact du `#25D366` de WhatsApp — même famille chromatique et mêmes associations psychologiques (calme, "aller de l'avant", faible fatigue oculaire en usage prolongé ; c'est le raisonnement documenté derrière le choix de WhatsApp lui-même, et repris par des apps à fort taux de rétention comme Spotify, Cash App, Revolut), sans être une copie littérale de la marque WhatsApp.
+- **Adaptations UI/UX inspirées de WhatsApp** :
+  - Bulles de message envoyées en vert pâle avec texte foncé (`bubbleSent`), au lieu de violet plein avec texte blanc — c'est la signature visuelle de WhatsApp. Bulles reçues restent blanches. Légère ombre portée sur les bulles.
+  - Bouton d'envoi du composer : rond, transparent par défaut, devient vert plein avec icône blanche dès qu'il y a du texte à envoyer (au lieu d'un bouton toujours neutre) — reproduit le comportement mic/send de WhatsApp.
+- **Ajustement nécessaire** : `success` (badge "Terminé") était déjà vert et devient donc identique à `primary`. Pour ne pas perdre la distinction visuelle avec le badge "En planification" (qui utilisait auparavant `primaryLight`/`primaryDark`), un nouveau couple de tokens `planning`/`planningLight` (ambre) a été introduit spécifiquement pour ce badge.
+- **Non repris de WhatsApp** : pas de double coche bleue "lu" — le backend ne distingue pas encore envoyé/livré/lu, donc afficher une coche double aurait été trompeur ; la coche simple existante ("envoyé") est conservée. Pas de refonte de la mise en page de l'accueil (cartes) vers la liste plate de WhatsApp — non demandé et cohérent avec les maquettes fournies pour cet écran.
+
 ---
 
 *Ce fichier sera complété au fil du développement.*

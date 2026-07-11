@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { colors, radii, spacing } from "../theme/theme";
+import { webNoOutline } from "../utils/webStyles";
 
 interface Props {
   onSend: (content: string) => void;
@@ -27,11 +28,17 @@ export function ChatComposer({ onSend, onPickMedia }: Props) {
         onChangeText={setText}
         placeholder="Message..."
         placeholderTextColor={colors.textMuted}
-        style={styles.input}
+        style={[styles.input, webNoOutline]}
         multiline
       />
-      <Pressable onPress={handleSend} style={styles.sendButton} hitSlop={8}>
-        <Text style={styles.sendIcon}>{text.trim() ? "➤" : "🎤"}</Text>
+      <Pressable
+        onPress={handleSend}
+        style={[styles.sendButton, text.trim() ? styles.sendButtonActive : undefined]}
+        hitSlop={8}
+      >
+        <Text style={[styles.sendIcon, text.trim() ? styles.sendIconActive : undefined]}>
+          {text.trim() ? "➤" : "🎤"}
+        </Text>
       </Pressable>
     </View>
   );
@@ -73,5 +80,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  sendButtonActive: { backgroundColor: colors.primary },
   sendIcon: { fontSize: 18 },
+  sendIconActive: { color: "#fff" },
 });
