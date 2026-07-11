@@ -129,6 +129,12 @@ Ce fichier documente les choix faits pour des points non couverts explicitement 
 - **Changement** : `OtpScreen` passe en thème clair (`colors.surface`/`colors.background`/`colors.text` au lieu des couleurs sombres codées en dur).
 - **Effet de bord corrigé au passage** : l'anneau de focus noir par défaut du navigateur (RN Web), déjà corrigé sur `FormInput`, était encore présent sur les cases de code (qui utilisent un `TextInput` brut, pas `FormInput`) et devenait très visible sur fond blanc. Extrait `webNoOutline` dans `src/utils/webStyles.ts` (partagé par `FormInput` et `OtpScreen`) pour éviter la duplication future.
 
+## 2026-07-11 — Serveur simulé sans base de données (`apps/backend/mock-server.js`)
+
+- **Constat** : l'utilisateur veut tester l'app sur son propre téléphone (Expo Go) sans configurer Postgres/Supabase.
+- **Choix** : formalisation en outil de dev committé (`npm run mock` dans `apps/backend`) du serveur HTTP minimal (Node natif, aucune dépendance) déjà utilisé pour générer les captures d'écran pendant cette session. Implémente les mêmes routes que l'API réelle avec des données en mémoire (réinitialisées à chaque redémarrage), OTP accepté sans vérification, et un endpoint d'upload factice qui accepte n'importe quel fichier sans le stocker.
+- **Limites explicites (documentées dans le README)** : ce n'est pas un environnement de test fonctionnel — les règles métier (verrouillage à l'archivage, validation OTP réelle, JWT signé, persistance) ne sont pas appliquées. Usage strictement réservé à la vérification visuelle de l'UI.
+
 ---
 
 *Ce fichier sera complété au fil du développement.*

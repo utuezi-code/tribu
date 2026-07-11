@@ -31,6 +31,37 @@ npm install
 npm run start
 ```
 
+### Tester l'UI sur ton téléphone sans base de données
+
+Pour voir/tester les écrans rapidement avec l'app **Expo Go**, sans installer Postgres ni configurer Supabase :
+
+```bash
+# Terminal 1 — backend simulé (aucune base de données requise)
+cd apps/backend
+npm install
+npm run mock
+```
+
+```bash
+# Terminal 2 — app mobile
+cd apps/mobile
+npm install
+```
+
+Dans `apps/mobile/.env` (à créer depuis `.env.example`), mets `EXPO_PUBLIC_API_URL` sur l'adresse IP locale de ta machine (pas `localhost`, ton téléphone doit pouvoir l'atteindre sur le même Wi-Fi) :
+
+```
+EXPO_PUBLIC_API_URL="http://192.168.1.XX:3000"
+```
+
+Puis :
+
+```bash
+npm run start
+```
+
+Scanne le QR code avec l'app **Expo Go** (iOS/Android). N'importe quel numéro et code à 6 chiffres fonctionnent pour se connecter — le serveur simulé (`apps/backend/mock-server.js`) accepte tout, avec quelques événements/messages de démo déjà en mémoire. Les vraies règles métier (verrouillage à l'archivage, etc.) ne sont **pas** appliquées par ce serveur : c'est un outil de test visuel, pas un environnement de test fonctionnel complet.
+
 ## Documentation
 
 - Brief produit complet : voir le document fourni par l'équipe produit.
