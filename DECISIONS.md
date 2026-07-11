@@ -172,6 +172,16 @@ Ce fichier documente les choix faits pour des points non couverts explicitement 
 - **Filet de sécurité robuste ajouté** : un point d'entrée "J'ai un code d'invitation" sur l'écran d'accueil ouvre une saisie manuelle du code (`POST /events/join/:inviteCode`, déjà existant côté backend). C'est le mécanisme qui fonctionne à coup sûr quelle que soit la plateforme/l'état d'installation du destinataire, contrairement à un deep link qui peut échouer silencieusement — testé de bout en bout (créer → partager le code → rejoindre via le code sur un autre compte).
 - **Non implémenté** : ouverture automatique de l'app + auto-jointure quand on tape sur le lien deep link depuis l'extérieur (nécessiterait de gérer l'état "invitation en attente" à travers tout le flux d'authentification si l'utilisateur n'est pas encore connecté). Le code manuel couvre ce besoin de façon plus simple et fiable pour l'instant ; à réévaluer si l'auto-jointure par lien devient une priorité.
 
+## 2026-07-11 — Rendre visible le cycle de vie "temporaire" de l'événement
+
+- **Constat** : l'utilisateur a reformulé la proposition de valeur centrale du produit — contrairement à un groupe WhatsApp qui traîne indéfiniment, un groupe Tribu est *temporaire par conception* et se referme tout seul. Le mécanisme d'archivage existait déjà côté backend, mais deux trous fonctionnels affaiblissaient cette promesse côté UI : rien n'expliquait clairement à l'utilisateur ce qui allait se passer et quand, et l'organisateur ne pouvait pas ajuster la date de fin si les plans changeaient (ce qui aurait rendu l'auto-archivage subi plutôt qu'utile).
+- **Changements** :
+  - **Compte à rebours** (`src/utils/countdown.ts`, "Se fige dans X jours") affiché sur chaque événement actif — dans la liste (`EventCard`) et dans l'en-tête de l'événement (`EventDetailScreen`). Rend le caractère temporaire visible en permanence plutôt qu'implicite.
+  - **Bandeau explicatif pendant la fenêtre de grâce** (`GRACE_PERIOD`) : "🔒 La discussion est figée. La galerie reste ouverte 48h de plus..." — jusqu'ici cet état n'affichait qu'une notice générique "en cours de clôture" sans expliquer la mécanique des 48h.
+  - **Bandeau d'urgence** quand il reste ≤1 jour avant le verrouillage ("⏳ Se fige demain : profitez des derniers échanges !").
+  - **Report de date par l'organisateur** : lien "Modifier" dans l'en-tête (visible seulement à l'organisateur, seulement tant que `status === ACTIVE` — conforme à la règle métier du brief section 3 : "l'organisateur peut modifier la date de fin tant que l'événement est actif"). Utilise `PATCH /events/:id` déjà existant côté backend, qui reprogramme déjà le job d'archivage.
+- **Limite de test connue** : le composant `@react-native-community/datetimepicker` ne rend pas d'UI interactive dans l'environnement de prévisualisation web headless utilisé pour les captures d'écran de cette session — le clic sur "Modifier" a été vérifié (aucune erreur), et le contrat d'API sous-jacent (`PATCH /events/:id`) a été vérifié directement en curl, mais l'interaction visuelle du sélecteur de date n'a pas pu être capturée. À tester sur un vrai appareil (la librairie est mature et déjà utilisée ailleurs dans l'app pour la création d'événement).
+
 ---
 
 *Ce fichier sera complété au fil du développement.*

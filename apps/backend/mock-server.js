@@ -86,6 +86,21 @@ const events = [
     ],
     _count: { media: 6 },
   },
+  {
+    id: "evt-4",
+    name: "Conf DevWeek",
+    type: "AUTRE",
+    coverImageUrl: null,
+    startDate: "2026-07-08T00:00:00.000Z",
+    endDate: "2026-07-10T00:00:00.000Z",
+    timezone: "Europe/Paris",
+    status: "GRACE_PERIOD",
+    archivedAt: null,
+    createdBy: "u1",
+    inviteCode: "jkl012",
+    members: [membership(me, "ORGANIZER", "evt-4"), membership(friends[2], "MEMBER", "evt-4")],
+    _count: { media: 3 },
+  },
 ];
 
 const messages = {
@@ -197,6 +212,14 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && eventMatch) {
     const event = events.find((e) => e.id === eventMatch[1]);
     return event ? send(res, 200, event) : send(res, 404, { message: "not found" });
+  }
+  if (req.method === "PATCH" && eventMatch) {
+    const event = events.find((e) => e.id === eventMatch[1]);
+    if (!event) return send(res, 404, { message: "not found" });
+    if (body.name !== undefined) event.name = body.name;
+    if (body.coverImageUrl !== undefined) event.coverImageUrl = body.coverImageUrl;
+    if (body.endDate !== undefined) event.endDate = body.endDate;
+    return send(res, 200, event);
   }
 
   const msgMatch = url.match(/^\/events\/([^/]+)\/messages$/);

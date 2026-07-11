@@ -1,5 +1,6 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { colors, eventTypeEmoji, radii, spacing, typography } from "../theme/theme";
+import { formatCountdown } from "../utils/countdown";
 import type { TribuEvent } from "../types/models";
 import { AvatarStack } from "./Avatar";
 import { StatusBadge } from "./StatusBadge";
@@ -36,7 +37,12 @@ export function EventCard({ event, onPress }: { event: TribuEvent; onPress: () =
           </Text>
           <View style={styles.footerRow}>
             <AvatarStack users={event.members.map((m) => m.user)} />
-            <StatusBadge status={event.status} />
+            <View style={styles.badgeGroup}>
+              {event.status === "ACTIVE" && (
+                <Text style={styles.countdown}>{formatCountdown(event.endDate)}</Text>
+              )}
+              <StatusBadge status={event.status} />
+            </View>
           </View>
         </View>
       </View>
@@ -68,4 +74,6 @@ const styles = StyleSheet.create({
   name: { ...typography.bodyBold, fontSize: 16, color: colors.text },
   meta: { ...typography.caption, color: colors.textSecondary, marginTop: 2, marginBottom: spacing.sm },
   footerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  badgeGroup: { alignItems: "flex-end", gap: 3 },
+  countdown: { ...typography.caption, fontSize: 11, color: colors.textMuted },
 });

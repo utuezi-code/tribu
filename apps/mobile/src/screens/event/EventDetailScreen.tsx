@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { eventsApi } from "../../api/events.api";
@@ -24,6 +25,7 @@ import { enqueueMessage, onQueueSettled } from "../../offline/messageQueue";
 import { pickAndUploadMedia } from "../../offline/mediaUpload";
 import { useSessionStore } from "../../store/session.store";
 import { colors, spacing, typography } from "../../theme/theme";
+import { daysUntil, formatCountdown } from "../../utils/countdown";
 import type { MainStackParamList } from "../../navigation/types";
 import type { Media, Message, TribuEvent } from "../../types/models";
 
@@ -45,6 +47,8 @@ export function EventDetailScreen({ route, navigation }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [media, setMedia] = useState<Media[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const [savingDate, setSavingDate] = useState(false);
   const listRef = useRef<FlatList<Message>>(null);
 
   const loadEvent = useCallback(async () => {
@@ -98,7 +102,14 @@ export function EventDetailScreen({ route, navigation }: Props) {
   }
 
   const isArchived = event.status === "ARCHIVED";
+  const isGracePeriod = event.status === "GRACE_PERIOD";
   const isLocked = event.status !== "ACTIVE"; // discussion figée dès la date de fin (GRACE_PERIOD inclus)
+  const isOrganizer = event.members.some(
+    (m) => m.userId === currentUser?.id && m.role === "ORGANIZER",
+  );
+  // Le report de date n'est autorisé que tant que l'événement est actif
+  // (la discussion figée/l'archivage ne doivent pas être "annulés" a posteriori).
+  const canEditEndDate = isOrganizer && event.status === "ACTIVE";
 
   async function handleSend(content: string) {
     const optimistic = await enqueueMessage(eventId, content);
@@ -115,6 +126,19 @@ export function EventDetailScreen({ route, navigation }: Props) {
     }
   }
 
+  async function handleUpdateEndDate(selected: Date) {
+    setSavingDate(true);
+    setError(null);
+    try {
+      const updated = await eventsApi.update(eventId, { endDate: selected.toISOString() });
+      setEvent(updated);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Impossible de mettre à jour la date.");
+    } finally {
+      setSavingDate(false);
+    }
+  }
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
@@ -126,20 +150,67 @@ export function EventDetailScreen({ route, navigation }: Props) {
           onPress={() => navigation.navigate("EventMembers", { eventId })}
         >
           <Text style={styles.eventName} numberOfLines={1}>{event.name}</Text>
-          <Text style={styles.eventMeta}>
-            {event.members.length} amis · {formatDateRange(event.startDate, event.endDate)}
-          </Text>
+          <View style={styles.eventMetaRow}>
+            <Text style={styles.eventMeta} numberOfLines={1}>
+              {event.members.length} amis · {formatDateRange(event.startDate, event.endDate)}
+            </Text>
+            {canEditEndDate && (
+              <Pressable
+                onPress={(e) => {
+                  e.stopPropagation();
+                  setDatePickerVisible(true);
+                }}
+                disabled={savingDate}
+                hitSlop={8}
+              >
+                <Text style={styles.editDateLink}>{savingDate ? "..." : "Modifier"}</Text>
+              </Pressable>
+            )}
+          </View>
+          {event.status === "ACTIVE" && (
+            <Text style={styles.countdown}>⏳ {formatCountdown(event.endDate)}</Text>
+          )}
         </Pressable>
         <Pressable onPress={() => navigation.navigate("EventMembers", { eventId })} hitSlop={8}>
           <AvatarStack users={event.members.map((m) => m.user)} max={3} />
         </Pressable>
       </View>
 
+      {datePickerVisible && (
+        <DateTimePicker
+          value={new Date(event.endDate)}
+          mode="date"
+          minimumDate={new Date()}
+          onChange={(_, selected) => {
+            setDatePickerVisible(false);
+            if (selected) handleUpdateEndDate(selected);
+          }}
+        />
+      )}
+
       {isArchived && (
         <View style={styles.archivedBanner}>
           <StatusBadge status="ARCHIVED" />
           <Text style={styles.archivedText}>
             Archivé automatiquement, les souvenirs restent ici 💜
+          </Text>
+        </View>
+      )}
+
+      {isGracePeriod && (
+        <View style={styles.graceBanner}>
+          <Text style={styles.graceText}>
+            🔒 La discussion est figée. La galerie reste ouverte 48h de plus pour ajouter vos
+            dernières photos, puis l'événement s'archive définitivement.
+          </Text>
+        </View>
+      )}
+
+      {event.status === "ACTIVE" && daysUntil(event.endDate) <= 1 && (
+        <View style={styles.soonBanner}>
+          <Text style={styles.soonText}>
+            ⏳ {formatCountdown(event.endDate)} : profitez des derniers échanges avant que la
+            discussion ne se fige !
           </Text>
         </View>
       )}
@@ -212,7 +283,10 @@ const styles = StyleSheet.create({
   back: { fontSize: 28, color: colors.text, width: 20 },
   headerInfo: { flex: 1 },
   eventName: { ...typography.bodyBold, fontSize: 16, color: colors.text },
-  eventMeta: { ...typography.caption, color: colors.textSecondary },
+  eventMetaRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  eventMeta: { ...typography.caption, color: colors.textSecondary, flexShrink: 1 },
+  editDateLink: { ...typography.caption, color: colors.primaryDark, fontWeight: "700" },
+  countdown: { ...typography.caption, color: colors.planning, fontWeight: "700", marginTop: 2 },
   archivedBanner: {
     backgroundColor: colors.primaryLight,
     padding: spacing.md,
@@ -220,6 +294,10 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   archivedText: { ...typography.caption, color: colors.primaryDark, textAlign: "center" },
+  graceBanner: { backgroundColor: colors.planningLight, padding: spacing.md },
+  graceText: { ...typography.caption, color: colors.planning, textAlign: "center", lineHeight: 18 },
+  soonBanner: { backgroundColor: colors.planningLight, padding: spacing.sm + 2 },
+  soonText: { ...typography.caption, color: colors.planning, textAlign: "center", lineHeight: 18 },
   tabs: { flexDirection: "row", backgroundColor: colors.surface, paddingHorizontal: spacing.md, paddingBottom: spacing.sm, gap: spacing.sm },
   tab: { flex: 1, paddingVertical: spacing.sm, borderRadius: 999, alignItems: "center", backgroundColor: colors.background },
   tabActive: { backgroundColor: colors.text },
