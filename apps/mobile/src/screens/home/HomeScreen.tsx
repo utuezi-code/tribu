@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { eventsApi } from "../../api/events.api";
 import { ApiError } from "../../api/client";
 import { EventCard } from "../../components/EventCard";
@@ -22,6 +23,7 @@ export function HomeScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const load = useCallback(async () => {
     setError(null);
@@ -51,7 +53,7 @@ export function HomeScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
         <Text style={styles.title}>Tes événements</Text>
         <Pressable style={styles.fab} onPress={() => navigation.navigate("CreateEvent")}>
           <Text style={styles.fabIcon}>+</Text>
@@ -74,11 +76,14 @@ export function HomeScreen({ navigation }: Props) {
           renderItem={({ item }) => (
             <EventCard event={item} onPress={() => navigation.navigate("EventDetail", { eventId: item.id })} />
           )}
-          contentContainerStyle={{ padding: spacing.md, paddingBottom: 100 }}
+          contentContainerStyle={{ padding: spacing.md, paddingBottom: 100 + insets.bottom }}
         />
       )}
 
-      <Pressable style={styles.createButton} onPress={() => navigation.navigate("CreateEvent")}>
+      <Pressable
+        style={[styles.createButton, { bottom: spacing.lg + insets.bottom }]}
+        onPress={() => navigation.navigate("CreateEvent")}
+      >
         <Text style={styles.createButtonLabel}>+ Nouvel événement</Text>
       </Pressable>
     </View>

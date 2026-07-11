@@ -141,6 +141,16 @@ Ce fichier documente les choix faits pour des points non couverts explicitement 
 - **Choix** : nouvel écran `EventMembersScreen` (poussé sur la pile de navigation, pas modal, cohérent avec le reste), accessible en tapant sur le nombre d'amis ou la pile d'avatars dans l'en-tête de `EventDetailScreen`. Liste triée organisateur d'abord puis alphabétique, badge "Organisateur", mention "(toi)" pour l'utilisateur courant.
 - **Portée non traitée** : pas d'action d'invitation ou de retrait de membre depuis cet écran (l'ajout de membres existe déjà via `POST /events/:id/members`, exposé uniquement à la création de l'événement pour l'instant) — à ajouter si demandé.
 
+## 2026-07-11 — Corrections de responsivité (safe area + débordements horizontaux)
+
+- **Constat** : l'app n'utilisait nulle part les zones de sécurité (`react-native-safe-area-context` était installé mais jamais branché) — sur les iPhone à encoche/Dynamic Island, le contenu passait sous la barre de statut et la barre du bas. De plus, plusieurs champs partageant une ligne flex (case de code SMS, champ téléphone à côté du sélecteur de pays, champ ami à côté du bouton "Inviter", champ message à côté des boutons d'action) débordaient horizontalement sur les écrans étroits (≤320px de large, ex. iPhone SE 1ère génération) : bug CSS flexbox classique où un `<input>` refuse de rétrécir sous sa largeur de contenu intrinsèque sans `min-width: 0` explicite.
+- **Corrections** :
+  - `SafeAreaProvider` ajouté à la racine de l'app (`App.tsx`) ; `useSafeAreaInsets()` utilisé dans tous les écrans (Phone, Otp, Home, CreateEvent, EventDetail, EventMembers) et dans `CountryPickerModal` pour respecter les zones de sécurité en haut et en bas.
+  - `minWidth: 0` ajouté à tous les champs de saisie en ligne flex partagée (cases de code OTP, champ téléphone, champ ami, champ message) — élimine les débordements horizontaux confirmés par capture d'écran à 320px de large.
+  - Cases de code OTP passées de largeur fixe (46px) à `flex: 1` avec `maxWidth` — s'adaptent à la largeur réelle de l'écran au lieu de déborder.
+  - `MediaGallery` : la taille des vignettes de la grille était calculée une seule fois via `Dimensions.get("window")` au chargement du module ; remplacé par `useWindowDimensions()` (recalcul réactif, utile en cas de rotation ou de redimensionnement multi-fenêtre Android).
+- **Vérification** : balayage automatisé de tous les écrans à 320px de large (le plus petit format réaliste) confirmant l'absence de tout débordement horizontal (`scrollWidth === clientWidth` partout), captures à l'appui.
+
 ---
 
 *Ce fichier sera complété au fil du développement.*

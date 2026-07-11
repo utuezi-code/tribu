@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { eventsApi } from "../../api/events.api";
@@ -35,6 +36,7 @@ export function CreateEventScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [datePickerTarget, setDatePickerTarget] = useState<"start" | "end" | null>(null);
+  const insets = useSafeAreaInsets();
 
   const canSubmit = name.trim().length > 0 && endDate > startDate;
 
@@ -65,7 +67,14 @@ export function CreateEventScreen({ navigation }: Props) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: spacing.lg }}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{
+        padding: spacing.lg,
+        paddingTop: spacing.lg + insets.top,
+        paddingBottom: spacing.lg + insets.bottom,
+      }}
+    >
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={styles.close}>✕</Text>
@@ -133,7 +142,7 @@ export function CreateEventScreen({ navigation }: Props) {
           value={phoneInput}
           onChangeText={setPhoneInput}
           placeholder="+33 6 ..."
-          style={{ flex: 1 }}
+          style={{ flex: 1, minWidth: 0 }}
           keyboardType="phone-pad"
           onSubmitEditing={addFriend}
         />

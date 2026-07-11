@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { authApi } from "../../api/auth.api";
 import { ApiError } from "../../api/client";
@@ -23,6 +24,7 @@ export function OtpScreen({ route, navigation }: Props) {
   const inputs = useRef<Array<TextInput | null>>([]);
   const shake = useRef(new Animated.Value(0)).current;
   const signIn = useSessionStore((s) => s.signIn);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (secondsLeft <= 0) return;
@@ -114,7 +116,12 @@ export function OtpScreen({ route, navigation }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top + spacing.md, paddingBottom: spacing.lg + insets.bottom },
+      ]}
+    >
       <Pressable onPress={() => navigation.goBack()} style={styles.backButton} hitSlop={8}>
         <Text style={styles.backIcon}>‹</Text>
       </Pressable>
@@ -175,7 +182,7 @@ export function OtpScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.surface, padding: spacing.lg, paddingTop: spacing.xl * 1.5 },
+  container: { flex: 1, backgroundColor: colors.surface, padding: spacing.lg },
   backButton: {
     width: 36,
     height: 36,
@@ -194,7 +201,9 @@ const styles = StyleSheet.create({
   editNumber: { ...typography.caption, color: colors.primary, fontWeight: "700", marginTop: spacing.xs },
   digitsRow: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.xl },
   digitBox: {
-    width: 46,
+    flex: 1,
+    minWidth: 0,
+    maxWidth: 52,
     height: 56,
     borderRadius: radii.md,
     borderWidth: 1.5,

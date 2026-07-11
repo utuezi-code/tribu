@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { eventsApi } from "../../api/events.api";
 import { ApiError } from "../../api/client";
@@ -24,6 +25,7 @@ export function EventMembersScreen({ route, navigation }: Props) {
   const currentUser = useSessionStore((s) => s.user);
   const [event, setEvent] = useState<TribuEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
 
   const load = useCallback(async () => {
     try {
@@ -42,7 +44,7 @@ export function EventMembersScreen({ route, navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
         <Pressable onPress={() => navigation.goBack()} hitSlop={8}>
           <Text style={styles.back}>‹</Text>
         </Pressable>
@@ -58,7 +60,7 @@ export function EventMembersScreen({ route, navigation }: Props) {
       <FlatList
         data={members}
         keyExtractor={(m) => m.id}
-        contentContainerStyle={{ padding: spacing.md }}
+        contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.md + insets.bottom }}
         ListHeaderComponent={
           members.length > 0 ? (
             <Text style={styles.count}>

@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { eventsApi } from "../../api/events.api";
 import { messagesApi } from "../../api/messages.api";
 import { mediaApi } from "../../api/media.api";
@@ -37,6 +38,7 @@ function formatDateRange(startDate: string, endDate: string) {
 export function EventDetailScreen({ route, navigation }: Props) {
   const { eventId } = route.params;
   const currentUser = useSessionStore((s) => s.user);
+  const insets = useSafeAreaInsets();
 
   const [event, setEvent] = useState<TribuEvent | null>(null);
   const [tab, setTab] = useState<Tab>("discussion");
@@ -115,7 +117,7 @@ export function EventDetailScreen({ route, navigation }: Props) {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
         <Pressable onPress={() => navigation.goBack()} hitSlop={8}>
           <Text style={styles.back}>‹</Text>
         </Pressable>
@@ -166,20 +168,25 @@ export function EventDetailScreen({ route, navigation }: Props) {
             onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
           />
           {isLocked ? (
-            <View style={styles.lockedNotice}>
+            <View style={[styles.lockedNotice, { paddingBottom: spacing.md + insets.bottom }]}>
               <Text style={styles.lockedText}>
                 🔒 Cet événement est {isArchived ? "archivé" : "en cours de clôture"} : la discussion est figée en lecture seule.
               </Text>
             </View>
           ) : (
-            <ChatComposer onSend={handleSend} onPickMedia={handlePickMedia} />
+            <View style={{ paddingBottom: insets.bottom, backgroundColor: colors.surface }}>
+              <ChatComposer onSend={handleSend} onPickMedia={handlePickMedia} />
+            </View>
           )}
         </>
       ) : (
         <>
           <MediaGallery media={media} onEndReached={loadMedia} />
           {!isArchived && (
-            <Pressable style={styles.addMediaButton} onPress={handlePickMedia}>
+            <Pressable
+              style={[styles.addMediaButton, { bottom: spacing.lg + insets.bottom }]}
+              onPress={handlePickMedia}
+            >
               <Text style={styles.addMediaLabel}>+ Ajouter des photos</Text>
             </Pressable>
           )}

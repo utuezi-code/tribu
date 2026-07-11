@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FlatList, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FormInput } from "./FormInput";
 import { colors, radii, spacing, typography } from "../theme/theme";
 import { haptics } from "../utils/haptics";
@@ -14,6 +15,7 @@ interface Props {
 export function CountryPickerModal({ visible, onClose, onSelect }: Props) {
   const [query, setQuery] = useState("");
   const results = searchCountries(query);
+  const insets = useSafeAreaInsets();
 
   function handleClose() {
     setQuery("");
@@ -23,7 +25,10 @@ export function CountryPickerModal({ visible, onClose, onSelect }: Props) {
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
       <Pressable style={styles.backdrop} onPress={handleClose}>
-        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+        <Pressable
+          style={[styles.sheet, { paddingBottom: spacing.md + insets.bottom }]}
+          onPress={(e) => e.stopPropagation()}
+        >
           <View style={styles.handle} />
           <Text style={styles.title}>Choisis ton pays</Text>
 

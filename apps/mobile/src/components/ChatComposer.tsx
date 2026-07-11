@@ -58,6 +58,7 @@ const styles = StyleSheet.create({
   icon: { fontSize: 20, color: colors.primary, fontWeight: "700" },
   input: {
     flex: 1,
+    minWidth: 0,
     backgroundColor: colors.background,
     borderRadius: radii.lg,
     paddingHorizontal: spacing.md,

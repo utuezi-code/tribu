@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { authApi } from "../../api/auth.api";
 import { ApiError } from "../../api/client";
@@ -31,6 +32,7 @@ export function PhoneScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const cardAnim = useRef(new Animated.Value(0)).current;
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     Animated.timing(cardAnim, { toValue: 1, duration: 450, useNativeDriver: true }).start();
@@ -55,7 +57,12 @@ export function PhoneScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={colors.gradientAuth} style={styles.hero} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+      <LinearGradient
+        colors={colors.gradientAuth}
+        style={[styles.hero, { paddingTop: insets.top }]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
         <View style={styles.heroGlow} />
         <View style={styles.logo}>
           <Text style={styles.logoEmoji}>☁️</Text>
@@ -72,6 +79,7 @@ export function PhoneScreen({ navigation }: Props) {
           style={[
             styles.card,
             {
+              paddingBottom: spacing.lg + insets.bottom,
               opacity: cardAnim,
               transform: [
                 { translateY: cardAnim.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }) },
@@ -210,6 +218,7 @@ const styles = StyleSheet.create({
   chevron: { color: colors.textMuted, fontSize: 12, marginLeft: 2 },
   phoneInput: {
     flex: 1,
+    minWidth: 0,
     ...typography.bodyBold,
     fontSize: 17,
   },

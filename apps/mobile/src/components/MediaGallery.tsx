@@ -1,10 +1,9 @@
-import { Dimensions, FlatList, Image, StyleSheet, Text, View } from "react-native";
+import { FlatList, Image, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { colors, spacing, typography } from "../theme/theme";
 import type { Media } from "../types/models";
 
 const GRID_GAP = 3;
 const COLUMNS = 3;
-const ITEM_SIZE = (Dimensions.get("window").width - spacing.md * 2 - GRID_GAP * (COLUMNS - 1)) / COLUMNS;
 
 function dayLabel(iso: string): string {
   const date = new Date(iso);
@@ -39,6 +38,10 @@ export function MediaGallery({
   onEndReached?: () => void;
 }) {
   const groups = groupByDay(media);
+  const { width: windowWidth } = useWindowDimensions();
+  // Recalculé à chaque changement de largeur (rotation, split-screen Android,
+  // pliables) plutôt que figé une fois au chargement du module.
+  const itemSize = (windowWidth - spacing.md * 2 - GRID_GAP * (COLUMNS - 1)) / COLUMNS;
 
   return (
     <FlatList
@@ -57,7 +60,7 @@ export function MediaGallery({
           </View>
           <View style={styles.grid}>
             {group.items.map((item) => (
-              <View key={item.id} style={{ width: ITEM_SIZE, height: ITEM_SIZE, marginBottom: GRID_GAP }}>
+              <View key={item.id} style={{ width: itemSize, height: itemSize, marginBottom: GRID_GAP }}>
                 <Image
                   source={{ uri: item.thumbnailUrl ?? item.storageUrl }}
                   style={styles.thumbnail}

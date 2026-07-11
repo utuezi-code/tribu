@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { AuthNavigator } from "./src/navigation/AuthNavigator";
@@ -23,10 +24,12 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <StatusBar style="dark" />
-      {accessToken ? <MainNavigator /> : <AuthNavigator />}
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <StatusBar style="dark" />
+        {accessToken ? <MainNavigator /> : <AuthNavigator />}
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 
