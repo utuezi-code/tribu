@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+  Modal,
   Pressable,
   RefreshControl,
   SectionList,
@@ -12,6 +13,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { eventsApi } from "../../api/events.api";
 import { ApiError } from "../../api/client";
 import { EventCard } from "../../components/EventCard";
+import { FormInput } from "../../components/FormInput";
+import { PrimaryButton } from "../../components/PrimaryButton";
 import { colors, radii, spacing, typography } from "../../theme/theme";
 import type { MainStackParamList } from "../../navigation/types";
 import type { TribuEvent } from "../../types/models";
@@ -23,6 +26,7 @@ export function HomeScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [joinModalVisible, setJoinModalVisible] = useState(false);
   const insets = useSafeAreaInsets();
 
   const load = useCallback(async () => {
@@ -60,6 +64,10 @@ export function HomeScreen({ navigation }: Props) {
         </Pressable>
       </View>
 
+      <Pressable onPress={() => setJoinModalVisible(true)} style={styles.joinLink}>
+        <Text style={styles.joinLinkText}>J'ai un code d'invitation</Text>
+      </Pressable>
+
       {error && <Text style={styles.error}>{error}</Text>}
 
       {!loading && events.length === 0 ? (
@@ -86,7 +94,80 @@ export function HomeScreen({ navigation }: Props) {
       >
         <Text style={styles.createButtonLabel}>+ Nouvel événement</Text>
       </Pressable>
+
+      <JoinByCodeModal
+        visible={joinModalVisible}
+        onClose={() => setJoinModalVisible(false)}
+        onJoined={(eventId) => {
+          setJoinModalVisible(false);
+          navigation.navigate("EventDetail", { eventId });
+        }}
+      />
     </View>
+  );
+}
+
+function JoinByCodeModal({
+  visible,
+  onClose,
+  onJoined,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onJoined: (eventId: string) => void;
+}) {
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
+
+  function handleClose() {
+    setCode("");
+    setError(null);
+    onClose();
+  }
+
+  async function handleJoin() {
+    const trimmed = code.trim();
+    if (!trimmed) return;
+    setError(null);
+    setLoading(true);
+    try {
+      const event = await eventsApi.joinByInviteCode(trimmed);
+      setCode("");
+      onJoined(event.id);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Code d'invitation invalide.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
+      <Pressable style={styles.modalBackdrop} onPress={handleClose}>
+        <Pressable
+          style={[styles.modalSheet, { paddingBottom: spacing.lg + insets.bottom }]}
+          onPress={(e) => e.stopPropagation()}
+        >
+          <View style={styles.modalHandle} />
+          <Text style={styles.modalTitle}>Rejoindre un événement</Text>
+          <Text style={styles.modalSubtitle}>Entre le code d'invitation partagé par l'organisateur.</Text>
+
+          <FormInput
+            value={code}
+            onChangeText={setCode}
+            placeholder="Ex : ABC123"
+            autoCapitalize="characters"
+            style={{ marginBottom: spacing.md }}
+          />
+
+          {error && <Text style={styles.error}>{error}</Text>}
+
+          <PrimaryButton label="Rejoindre" onPress={handleJoin} disabled={!code.trim()} loading={loading} />
+        </Pressable>
+      </Pressable>
+    </Modal>
   );
 }
 
@@ -109,6 +190,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   fabIcon: { color: "#fff", fontSize: 22, marginTop: -2 },
+  joinLink: { paddingHorizontal: spacing.md, paddingTop: spacing.xs, paddingBottom: spacing.sm },
+  joinLinkText: { ...typography.caption, color: colors.primaryDark, fontWeight: "700" },
   sectionHeader: {
     ...typography.caption,
     fontWeight: "700",
@@ -132,4 +215,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   createButtonLabel: { color: "#fff", ...typography.bodyBold, fontSize: 16 },
+  modalBackdrop: { flex: 1, backgroundColor: colors.overlayDark, justifyContent: "flex-end" },
+  modalSheet: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: radii.xl,
+    borderTopRightRadius: radii.xl,
+    padding: spacing.lg,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.border,
+    alignSelf: "center",
+    marginBottom: spacing.md,
+  },
+  modalTitle: { ...typography.heading, color: colors.text, marginBottom: spacing.xs },
+  modalSubtitle: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.lg },
 });

@@ -161,6 +161,17 @@ Ce fichier documente les choix faits pour des points non couverts explicitement 
 - **Ajustement nécessaire** : `success` (badge "Terminé") était déjà vert et devient donc identique à `primary`. Pour ne pas perdre la distinction visuelle avec le badge "En planification" (qui utilisait auparavant `primaryLight`/`primaryDark`), un nouveau couple de tokens `planning`/`planningLight` (ambre) a été introduit spécifiquement pour ce badge.
 - **Non repris de WhatsApp** : pas de double coche bleue "lu" — le backend ne distingue pas encore envoyé/livré/lu, donc afficher une coche double aurait été trompeur ; la coche simple existante ("envoyé") est conservée. Pas de refonte de la mise en page de l'accueil (cartes) vers la liste plate de WhatsApp — non demandé et cohérent avec les maquettes fournies pour cet écran.
 
+## 2026-07-11 — Création d'événement : date de début automatique, invitation par lien uniquement (demande explicite)
+
+- **Constat** : demande explicite de l'utilisateur — la date de début doit être la date de création de l'événement (pas saisie par l'utilisateur), et une fois créé, l'événement se partage uniquement via un lien/code, sans saisie de numéros de téléphone à la création.
+- **Changements backend** :
+  - `CreateEventDto` n'accepte plus `startDate` ni `invitePhoneNumbers`. `EventsService.create` fixe `startDate = new Date()` côté serveur et ne fait plus d'invitation par téléphone à la création.
+  - `POST /events/:id/members` (ajout par téléphone) est conservé tel quel pour un usage futur ("inviter plus tard"), simplement retiré du flux de création.
+- **Changements mobile — écran de création** : suppression du sélecteur de date de début et de la section "Les amis" (saisie de numéros). Seuls type, nom et date de fin ("Jusqu'à quand ?") restent. Après création, un nouvel écran affiche le code d'invitation de l'événement avec un bouton "Partager le lien" (API `Share` native de React Native) avant de continuer vers l'événement.
+- **Lien d'invitation — limite assumée** : le lien partagé est un deep link `tribu://join/{code}` (le schéma `tribu` est déjà déclaré dans `app.json`). Il ne fonctionne que si le destinataire a déjà l'app installée avec un build compatible — aucune page web d'atterrissage (`https://tribu.app/join/...`) n'est déployée dans ce projet, donc pour un destinataire qui n'a pas l'app, le deep link ne mène nulle part. Pour cette raison, le code brut est **toujours** partagé en clair en plus du lien.
+- **Filet de sécurité robuste ajouté** : un point d'entrée "J'ai un code d'invitation" sur l'écran d'accueil ouvre une saisie manuelle du code (`POST /events/join/:inviteCode`, déjà existant côté backend). C'est le mécanisme qui fonctionne à coup sûr quelle que soit la plateforme/l'état d'installation du destinataire, contrairement à un deep link qui peut échouer silencieusement — testé de bout en bout (créer → partager le code → rejoindre via le code sur un autre compte).
+- **Non implémenté** : ouverture automatique de l'app + auto-jointure quand on tape sur le lien deep link depuis l'extérieur (nécessiterait de gérer l'état "invitation en attente" à travers tout le flux d'authentification si l'utilisateur n'est pas encore connecté). Le code manuel couvre ce besoin de façon plus simple et fiable pour l'instant ; à réévaluer si l'auto-jointure par lien devient une priorité.
+
 ---
 
 *Ce fichier sera complété au fil du développement.*

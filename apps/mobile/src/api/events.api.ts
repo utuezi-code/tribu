@@ -4,11 +4,10 @@ import type { EventType, TribuEvent } from "../types/models";
 export interface CreateEventInput {
   type: EventType;
   name: string;
-  startDate: string;
+  /** Pas de date de début : un événement démarre au moment de sa création côté serveur. */
   endDate: string;
   timezone?: string;
   coverImageUrl?: string;
-  invitePhoneNumbers?: string[];
 }
 
 export const eventsApi = {

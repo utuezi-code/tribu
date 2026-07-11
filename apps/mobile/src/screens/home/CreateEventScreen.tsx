@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -8,8 +8,10 @@ import { ApiError } from "../../api/client";
 import { FormInput } from "../../components/FormInput";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { colors, eventTypeEmoji, radii, spacing, typography } from "../../theme/theme";
+import { buildInviteLink } from "../../utils/inviteLink";
+import { haptics } from "../../utils/haptics";
 import type { MainStackParamList } from "../../navigation/types";
-import type { EventType } from "../../types/models";
+import type { EventType, TribuEvent } from "../../types/models";
 
 type Props = NativeStackScreenProps<MainStackParamList, "CreateEvent">;
 
@@ -29,23 +31,14 @@ function formatShort(date: Date) {
 export function CreateEventScreen({ navigation }: Props) {
   const [type, setType] = useState<EventType>("VOYAGE");
   const [name, setName] = useState("");
-  const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
-  const [friendPhones, setFriendPhones] = useState<string[]>([]);
-  const [phoneInput, setPhoneInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [datePickerTarget, setDatePickerTarget] = useState<"start" | "end" | null>(null);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const [createdEvent, setCreatedEvent] = useState<TribuEvent | null>(null);
   const insets = useSafeAreaInsets();
 
-  const canSubmit = name.trim().length > 0 && endDate > startDate;
-
-  function addFriend() {
-    const trimmed = phoneInput.trim();
-    if (!trimmed) return;
-    setFriendPhones((prev) => [...prev, trimmed]);
-    setPhoneInput("");
-  }
+  const canSubmit = name.trim().length > 0 && endDate > new Date();
 
   async function handleCreate() {
     setError(null);
@@ -54,16 +47,24 @@ export function CreateEventScreen({ navigation }: Props) {
       const event = await eventsApi.create({
         type,
         name: name.trim(),
-        startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
-        invitePhoneNumbers: friendPhones,
       });
-      navigation.replace("EventDetail", { eventId: event.id });
+      setCreatedEvent(event);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Impossible de créer l'événement.");
     } finally {
       setLoading(false);
     }
+  }
+
+  if (createdEvent) {
+    return (
+      <InviteShareStep
+        event={createdEvent}
+        insetsBottom={insets.bottom}
+        onContinue={() => navigation.replace("EventDetail", { eventId: createdEvent.id })}
+      />
+    );
   }
 
   return (
@@ -102,56 +103,25 @@ export function CreateEventScreen({ navigation }: Props) {
       <Text style={styles.label}>NOM</Text>
       <FormInput value={name} onChangeText={setName} placeholder="Road-trip Portugal" />
 
-      <Text style={styles.label}>DATES</Text>
-      <View style={styles.datesRow}>
-        <Pressable style={styles.dateChip} onPress={() => setDatePickerTarget("start")}>
-          <Text style={styles.dateChipText}>{formatShort(startDate)}</Text>
-        </Pressable>
-        <Text style={styles.arrow}>→</Text>
-        <Pressable style={styles.dateChip} onPress={() => setDatePickerTarget("end")}>
-          <Text style={styles.dateChipText}>{formatShort(endDate)}</Text>
-        </Pressable>
-      </View>
+      <Text style={styles.label}>JUSQU'À QUAND ?</Text>
+      <Pressable style={styles.dateChip} onPress={() => setDatePickerVisible(true)}>
+        <Text style={styles.dateChipText}>{formatShort(endDate)}</Text>
+      </Pressable>
       <Text style={styles.hint}>
-        La discussion se fige et la galerie s'archive automatiquement à minuit après la date de fin.
+        L'événement commence maintenant. La discussion se fige et la galerie s'archive
+        automatiquement à minuit après cette date.
       </Text>
 
-      {datePickerTarget && (
+      {datePickerVisible && (
         <DateTimePicker
-          value={datePickerTarget === "start" ? startDate : endDate}
+          value={endDate}
           mode="date"
-          minimumDate={datePickerTarget === "end" ? startDate : undefined}
+          minimumDate={new Date()}
           onChange={(_, selected) => {
-            setDatePickerTarget(null);
-            if (!selected) return;
-            if (datePickerTarget === "start") {
-              setStartDate(selected);
-              if (endDate <= selected) {
-                setEndDate(new Date(selected.getTime() + 24 * 60 * 60 * 1000));
-              }
-            } else {
-              setEndDate(selected);
-            }
+            setDatePickerVisible(false);
+            if (selected) setEndDate(selected);
           }}
         />
-      )}
-
-      <Text style={styles.label}>LES AMIS</Text>
-      <View style={styles.friendsRow}>
-        <FormInput
-          value={phoneInput}
-          onChangeText={setPhoneInput}
-          placeholder="+33 6 ..."
-          style={{ flex: 1, minWidth: 0 }}
-          keyboardType="phone-pad"
-          onSubmitEditing={addFriend}
-        />
-        <Pressable style={styles.inviteButton} onPress={addFriend}>
-          <Text style={styles.inviteButtonLabel}>+ Inviter</Text>
-        </Pressable>
-      </View>
-      {friendPhones.length > 0 && (
-        <Text style={styles.friendsList}>{friendPhones.join(", ")}</Text>
       )}
 
       {error && <Text style={styles.error}>{error}</Text>}
@@ -160,6 +130,57 @@ export function CreateEventScreen({ navigation }: Props) {
       <PrimaryButton label="Créer l'événement →" onPress={handleCreate} disabled={!canSubmit} loading={loading} />
       <View style={{ height: spacing.xl }} />
     </ScrollView>
+  );
+}
+
+function InviteShareStep({
+  event,
+  insetsBottom,
+  onContinue,
+}: {
+  event: TribuEvent;
+  insetsBottom: number;
+  onContinue: () => void;
+}) {
+  const link = buildInviteLink(event.inviteCode);
+  const [shareError, setShareError] = useState<string | null>(null);
+
+  async function handleShare() {
+    haptics.tap();
+    setShareError(null);
+    try {
+      // Résout avec { action: Share.dismissedAction } en cas d'annulation
+      // (pas une erreur) : seul un vrai rejet de promesse doit être signalé.
+      await Share.share({
+        message: `Rejoins "${event.name}" sur Tribu ! Ouvre l'app et utilise le code ${event.inviteCode}, ou ce lien si tu as déjà l'app : ${link}`,
+      });
+    } catch {
+      setShareError("Impossible d'ouvrir le partage. Le code reste affiché ci-dessous.");
+    }
+  }
+
+  return (
+    <View style={[styles.shareContainer, { paddingBottom: spacing.lg + insetsBottom }]}>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <Text style={styles.shareEmoji}>🎉</Text>
+        <Text style={styles.shareTitle}>Événement créé !</Text>
+        <Text style={styles.shareSubtitle}>
+          Partage ce lien avec tes amis pour qu'ils rejoignent "{event.name}".
+        </Text>
+
+        <View style={styles.codeBox}>
+          <Text style={styles.codeLabel}>CODE D'INVITATION</Text>
+          <Text style={styles.codeValue}>{event.inviteCode}</Text>
+        </View>
+
+        <PrimaryButton label="Partager le lien →" onPress={handleShare} />
+        {shareError && <Text style={styles.error}>{shareError}</Text>}
+      </View>
+
+      <Pressable onPress={onContinue} style={styles.continueLink}>
+        <Text style={styles.continueLinkText}>Aller à l'événement</Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -195,9 +216,7 @@ const styles = StyleSheet.create({
   typeEmoji: { fontSize: 22, marginBottom: spacing.xs },
   typeLabel: { ...typography.caption, color: colors.textSecondary },
   typeLabelSelected: { color: colors.primaryDark, fontWeight: "700" },
-  datesRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   dateChip: {
-    flex: 1,
     height: 52,
     backgroundColor: colors.surface,
     borderRadius: radii.md,
@@ -207,17 +226,31 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   dateChipText: { color: colors.text, ...typography.body },
-  arrow: { color: colors.textMuted },
   hint: { ...typography.caption, color: colors.textMuted, marginTop: spacing.sm, lineHeight: 18 },
-  friendsRow: { flexDirection: "row", gap: spacing.sm, alignItems: "center" },
-  inviteButton: {
-    height: 52,
-    justifyContent: "center",
-    backgroundColor: colors.primaryLight,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.md,
-  },
-  inviteButtonLabel: { color: colors.primaryDark, fontWeight: "700" },
-  friendsList: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.sm },
   error: { ...typography.caption, color: colors.danger, marginTop: spacing.md },
+  shareContainer: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
+  shareEmoji: { fontSize: 56, marginBottom: spacing.md },
+  shareTitle: { ...typography.title, fontSize: 24, color: colors.text, marginBottom: spacing.sm },
+  shareSubtitle: {
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: "center",
+    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  },
+  codeBox: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderStyle: "dashed",
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    alignItems: "center",
+    marginBottom: spacing.xl,
+  },
+  codeLabel: { ...typography.caption, color: colors.textMuted, letterSpacing: 1, fontWeight: "700" },
+  codeValue: { ...typography.title, fontSize: 26, color: colors.primaryDark, letterSpacing: 2, marginTop: spacing.xs },
+  continueLink: { alignItems: "center", paddingVertical: spacing.md },
+  continueLinkText: { ...typography.bodyBold, color: colors.textSecondary },
 });

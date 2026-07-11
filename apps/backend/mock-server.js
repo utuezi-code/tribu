@@ -166,19 +166,30 @@ const server = http.createServer(async (req, res) => {
       name: body.name ?? "Nouvel événement",
       type: body.type ?? "AUTRE",
       coverImageUrl: body.coverImageUrl ?? null,
-      startDate: body.startDate ?? new Date().toISOString(),
+      // Pas de date de début côté client : l'événement démarre à sa création.
+      startDate: new Date().toISOString(),
       endDate: body.endDate ?? new Date().toISOString(),
       timezone: body.timezone ?? "Europe/Paris",
       status: "ACTIVE",
       archivedAt: null,
       createdBy: "u1",
-      inviteCode: randomUUID().slice(0, 8),
+      inviteCode: randomUUID().slice(0, 6).toUpperCase(),
       members: [membership(me, "ORGANIZER", id)],
       _count: { media: 0 },
     };
     events.unshift(event);
     messages[id] = [];
     media[id] = [];
+    return send(res, 200, event);
+  }
+
+  const joinMatch = url.match(/^\/events\/join\/([^/]+)$/);
+  if (req.method === "POST" && joinMatch) {
+    const event = events.find((e) => e.inviteCode === joinMatch[1]);
+    if (!event) return send(res, 404, { message: "Lien d'invitation invalide." });
+    if (!event.members.some((m) => m.userId === me.id)) {
+      event.members.push(membership(me, "MEMBER", event.id));
+    }
     return send(res, 200, event);
   }
 

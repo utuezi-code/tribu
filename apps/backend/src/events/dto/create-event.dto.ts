@@ -1,5 +1,5 @@
 import { EventType } from "@prisma/client";
-import { IsArray, IsEnum, IsISO8601, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import { IsEnum, IsISO8601, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 
 export class CreateEventDto {
   @IsEnum(EventType)
@@ -10,9 +10,7 @@ export class CreateEventDto {
   @MaxLength(80)
   name!: string;
 
-  @IsISO8601()
-  startDate!: string;
-
+  /** Date de fin uniquement : la date de début est fixée par le serveur à la création (voir EventsService.create). */
   @IsISO8601()
   endDate!: string;
 
@@ -23,9 +21,4 @@ export class CreateEventDto {
   @IsOptional()
   @IsString()
   coverImageUrl?: string;
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  invitePhoneNumbers?: string[];
 }

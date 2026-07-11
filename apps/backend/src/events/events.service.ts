@@ -13,11 +13,13 @@ export class EventsService {
   ) {}
 
   async create(userId: string, dto: CreateEventDto) {
-    const startDate = new Date(dto.startDate);
+    // La date de début n'est pas saisie par l'utilisateur : un événement
+    // commence au moment de sa création dans l'app.
+    const startDate = new Date();
     const endDate = new Date(dto.endDate);
 
     if (endDate <= startDate) {
-      throw new ForbiddenException("La date de fin doit être après la date de début.");
+      throw new ForbiddenException("La date de fin doit être dans le futur.");
     }
 
     const event = await this.prisma.event.create({
@@ -35,10 +37,8 @@ export class EventsService {
       },
     });
 
-    if (dto.invitePhoneNumbers?.length) {
-      await this.addMembersByPhoneNumbers(event.id, dto.invitePhoneNumbers);
-    }
-
+    // Pas d'invitation par téléphone à la création : l'organisateur partage
+    // simplement le lien d'invitation (event.inviteCode) une fois l'événement créé.
     await this.archiveService.scheduleForEvent(event.id, event.endDate, event.timezone);
 
     return this.findOneForUser(userId, event.id);
