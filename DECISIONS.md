@@ -107,6 +107,12 @@ Ce fichier documente les choix faits pour des points non couverts explicitement 
   - `OtpScreen` : indicateur d'étapes (2 points), lien "Modifier le numéro" pour revenir en arrière, cases de code avec halo lumineux sur la case active, et animation de secousse (shake) en cas de code invalide.
 - **Portée non traitée** : pas de mode sombre système ni de nouvelle refonte des autres écrans (Accueil, Création d'événement, etc.) — cette itération se limite à l'écran de connexion signalé par l'utilisateur. À élargir sur demande.
 
+## 2026-07-11 — Composant `FormInput` partagé + correction du rendu des champs
+
+- **Constat** : l'utilisateur a signalé que le champ de saisie était "bizarre". Cause identifiée : sur RN Web, un `TextInput` focalisé reçoit l'anneau de focus par défaut du navigateur (rectangulaire, non arrondi), en plus/à la place du style de focus de l'app ; de plus la puce d'indicatif pays et le champ téléphone n'avaient pas la même hauteur (aucun des deux n'avait de `height`/`paddingVertical` explicite), ce qui les désalignait visuellement.
+- **Choix** : extraction d'un composant `FormInput` (`src/components/FormInput.tsx`) réutilisé par `PhoneScreen` et `CreateEventScreen`, avec hauteur fixe (52px, alignée sur la puce pays et les puces de date), état de focus géré par l'app (bordure + halo violet cohérents avec le reste du design) et `outlineStyle: "none"` pour désactiver l'anneau natif du navigateur sur web (extension web-only de react-native-web, absente des types RN standards — cast isolé documenté dans le fichier).
+- **Padding/marges** : augmentés sur `PhoneScreen` (carte, espacement entre sections) et `CreateEventScreen` (padding du conteneur, espacement entre les blocs de formulaire) suite à la demande explicite de l'utilisateur d'aérer ces écrans.
+
 ---
 
 *Ce fichier sera complété au fil du développement.*

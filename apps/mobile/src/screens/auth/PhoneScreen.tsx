@@ -6,7 +6,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -14,6 +13,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { authApi } from "../../api/auth.api";
 import { ApiError } from "../../api/client";
 import { CountryPickerModal } from "../../components/CountryPickerModal";
+import { FormInput } from "../../components/FormInput";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { colors, radii, shadows, spacing, typography } from "../../theme/theme";
 import { DEFAULT_COUNTRY, formatPhoneForDisplay, type Country } from "../../utils/countries";
@@ -88,11 +88,10 @@ export function PhoneScreen({ navigation }: Props) {
               <Text style={styles.dialCode}>{country.dialCode}</Text>
               <Text style={styles.chevron}>▾</Text>
             </Pressable>
-            <TextInput
+            <FormInput
               value={phone}
               onChangeText={(v) => setPhone(formatPhoneForDisplay(v))}
               placeholder="6 12 34 56 78"
-              placeholderTextColor={colors.textMuted}
               keyboardType="phone-pad"
               style={styles.phoneInput}
               autoFocus
@@ -102,7 +101,7 @@ export function PhoneScreen({ navigation }: Props) {
 
           {error && <Text style={styles.error}>{error}</Text>}
 
-          <View style={{ height: spacing.lg }} />
+          <View style={{ height: spacing.xl }} />
           <PrimaryButton
             label="Recevoir le code →"
             onPress={handleSubmit}
@@ -163,20 +162,35 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopLeftRadius: radii.xl,
     borderTopRightRadius: radii.xl,
-    padding: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.lg,
     ...shadows.soft,
   },
   title: { ...typography.title, fontSize: 24, color: colors.text },
-  subtitle: { ...typography.body, color: colors.textSecondary, marginTop: spacing.xs, marginBottom: spacing.lg },
-  label: { ...typography.caption, color: colors.textMuted, letterSpacing: 0.5, marginBottom: spacing.sm, fontWeight: "700" },
-  phoneRow: { flexDirection: "row", gap: spacing.sm },
+  subtitle: {
+    ...typography.body,
+    color: colors.textSecondary,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xl,
+    lineHeight: 21,
+  },
+  label: {
+    ...typography.caption,
+    color: colors.textMuted,
+    letterSpacing: 0.5,
+    marginBottom: spacing.md,
+    fontWeight: "700",
+  },
+  phoneRow: { flexDirection: "row", alignItems: "flex-start", gap: spacing.md },
   countryPill: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
+    height: 52,
     backgroundColor: colors.background,
     borderRadius: radii.md,
-    paddingHorizontal: spacing.sm + 2,
+    paddingHorizontal: spacing.md,
     borderWidth: 1.5,
     borderColor: colors.border,
   },
@@ -185,22 +199,16 @@ const styles = StyleSheet.create({
   chevron: { color: colors.textMuted, fontSize: 12, marginLeft: 2 },
   phoneInput: {
     flex: 1,
-    backgroundColor: colors.background,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.md,
-    borderWidth: 1.5,
-    borderColor: colors.border,
     ...typography.bodyBold,
     fontSize: 17,
-    color: colors.text,
   },
-  hint: { ...typography.caption, color: colors.textMuted, marginTop: spacing.sm },
-  error: { ...typography.caption, color: colors.danger, marginTop: spacing.sm },
+  hint: { ...typography.caption, color: colors.textMuted, marginTop: spacing.md, lineHeight: 18 },
+  error: { ...typography.caption, color: colors.danger, marginTop: spacing.md },
   legal: {
     ...typography.caption,
     color: colors.textMuted,
     textAlign: "center",
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
     lineHeight: 18,
   },
   legalLink: { color: colors.primaryDark, fontWeight: "600" },

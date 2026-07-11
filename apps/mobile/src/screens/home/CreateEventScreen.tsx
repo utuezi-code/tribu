@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { eventsApi } from "../../api/events.api";
 import { ApiError } from "../../api/client";
+import { FormInput } from "../../components/FormInput";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { colors, eventTypeEmoji, radii, spacing, typography } from "../../theme/theme";
 import type { MainStackParamList } from "../../navigation/types";
@@ -64,7 +65,7 @@ export function CreateEventScreen({ navigation }: Props) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: spacing.md }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ padding: spacing.lg }}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={styles.close}>✕</Text>
@@ -90,13 +91,7 @@ export function CreateEventScreen({ navigation }: Props) {
       </View>
 
       <Text style={styles.label}>NOM</Text>
-      <TextInput
-        value={name}
-        onChangeText={setName}
-        placeholder="Road-trip Portugal"
-        placeholderTextColor={colors.textMuted}
-        style={styles.input}
-      />
+      <FormInput value={name} onChangeText={setName} placeholder="Road-trip Portugal" />
 
       <Text style={styles.label}>DATES</Text>
       <View style={styles.datesRow}>
@@ -134,12 +129,11 @@ export function CreateEventScreen({ navigation }: Props) {
 
       <Text style={styles.label}>LES AMIS</Text>
       <View style={styles.friendsRow}>
-        <TextInput
+        <FormInput
           value={phoneInput}
           onChangeText={setPhoneInput}
           placeholder="+33 6 ..."
-          placeholderTextColor={colors.textMuted}
-          style={[styles.input, { flex: 1, marginBottom: 0 }]}
+          style={{ flex: 1 }}
           keyboardType="phone-pad"
           onSubmitEditing={addFriend}
         />
@@ -162,10 +156,22 @@ export function CreateEventScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: spacing.lg },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: spacing.xl,
+  },
   close: { fontSize: 18, color: colors.textSecondary },
   title: { ...typography.heading, color: colors.text },
-  label: { ...typography.caption, color: colors.textMuted, letterSpacing: 0.5, marginBottom: spacing.sm, marginTop: spacing.md },
+  label: {
+    ...typography.caption,
+    color: colors.textMuted,
+    letterSpacing: 0.5,
+    marginBottom: spacing.md,
+    marginTop: spacing.lg,
+    fontWeight: "700",
+  },
   typeRow: { flexDirection: "row", gap: spacing.sm },
   typeCard: {
     flex: 1,
@@ -177,40 +183,32 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   typeCardSelected: { borderColor: colors.primary, backgroundColor: colors.primaryLight },
-  typeEmoji: { fontSize: 22, marginBottom: 4 },
+  typeEmoji: { fontSize: 22, marginBottom: spacing.xs },
   typeLabel: { ...typography.caption, color: colors.textSecondary },
   typeLabelSelected: { color: colors.primaryDark, fontWeight: "700" },
-  input: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  datesRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  datesRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   dateChip: {
     flex: 1,
+    height: 52,
     backgroundColor: colors.surface,
     borderRadius: radii.md,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
-    paddingVertical: spacing.sm + 2,
     alignItems: "center",
+    justifyContent: "center",
   },
   dateChipText: { color: colors.text, ...typography.body },
   arrow: { color: colors.textMuted },
-  hint: { ...typography.caption, color: colors.textMuted, marginTop: spacing.sm },
+  hint: { ...typography.caption, color: colors.textMuted, marginTop: spacing.sm, lineHeight: 18 },
   friendsRow: { flexDirection: "row", gap: spacing.sm, alignItems: "center" },
   inviteButton: {
+    height: 52,
+    justifyContent: "center",
     backgroundColor: colors.primaryLight,
     borderRadius: radii.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
   },
   inviteButtonLabel: { color: colors.primaryDark, fontWeight: "700" },
-  friendsList: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.xs },
+  friendsList: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.sm },
   error: { ...typography.caption, color: colors.danger, marginTop: spacing.md },
 });
