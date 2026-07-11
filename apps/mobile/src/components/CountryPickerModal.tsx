@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { FlatList, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { FormInput } from "./FormInput";
 import { colors, radii, spacing, typography } from "../theme/theme";
-import { COUNTRIES, type Country } from "../utils/countries";
+import { haptics } from "../utils/haptics";
+import { searchCountries, type Country } from "../utils/countries";
 
 interface Props {
   visible: boolean;
@@ -9,21 +12,41 @@ interface Props {
 }
 
 export function CountryPickerModal({ visible, onClose, onSelect }: Props) {
+  const [query, setQuery] = useState("");
+  const results = searchCountries(query);
+
+  function handleClose() {
+    setQuery("");
+    onClose();
+  }
+
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose}>
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
+      <Pressable style={styles.backdrop} onPress={handleClose}>
         <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
           <View style={styles.handle} />
           <Text style={styles.title}>Choisis ton pays</Text>
+
+          <FormInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Rechercher un pays ou un indicatif"
+            style={styles.search}
+            autoFocus
+          />
+
           <FlatList
-            data={COUNTRIES}
+            data={results}
             keyExtractor={(c) => c.code}
+            keyboardShouldPersistTaps="handled"
+            ListEmptyComponent={<Text style={styles.empty}>Aucun pays trouvé.</Text>}
             renderItem={({ item }) => (
               <Pressable
                 style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
                 onPress={() => {
+                  haptics.tap();
                   onSelect(item);
-                  onClose();
+                  handleClose();
                 }}
               >
                 <Text style={styles.flag}>{item.flag}</Text>
@@ -46,7 +69,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: radii.xl,
     paddingTop: spacing.sm,
     paddingHorizontal: spacing.md,
-    maxHeight: "70%",
+    paddingBottom: spacing.md,
+    maxHeight: "75%",
   },
   handle: {
     width: 40,
@@ -56,7 +80,9 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: spacing.md,
   },
-  title: { ...typography.heading, color: colors.text, marginBottom: spacing.sm },
+  title: { ...typography.heading, color: colors.text, marginBottom: spacing.md },
+  search: { marginBottom: spacing.sm },
+  empty: { ...typography.body, color: colors.textMuted, textAlign: "center", paddingVertical: spacing.lg },
   row: {
     flexDirection: "row",
     alignItems: "center",

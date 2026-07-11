@@ -6,6 +6,7 @@ import { ApiError } from "../../api/client";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { useSessionStore } from "../../store/session.store";
 import { colors, radii, spacing, typography } from "../../theme/theme";
+import { haptics } from "../../utils/haptics";
 import type { AuthStackParamList } from "../../navigation/types";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "OtpVerification">;
@@ -47,12 +48,36 @@ export function OtpScreen({ route, navigation }: Props) {
   }
 
   function handleChangeDigit(index: number, value: string) {
-    const clean = value.replace(/\D/g, "").slice(-1);
+    const cleaned = value.replace(/\D/g, "");
+
+    // Collage ou autofill SMS natif (iOS/Android déposent parfois le code
+    // entier dans la case focalisée) : on répartit les chiffres au lieu de
+    // ne garder que le dernier caractère.
+    if (cleaned.length > 1) {
+      const next = [...digits];
+      let lastIndex = index;
+      for (let i = 0; i < cleaned.length && index + i < CODE_LENGTH; i++) {
+        next[index + i] = cleaned[i] ?? "";
+        lastIndex = index + i;
+      }
+      setDigits(next);
+      haptics.tap();
+      if (lastIndex < CODE_LENGTH - 1) {
+        inputs.current[lastIndex + 1]?.focus();
+      } else {
+        inputs.current[lastIndex]?.blur();
+      }
+      return;
+    }
+
     const next = [...digits];
-    next[index] = clean;
+    next[index] = cleaned;
     setDigits(next);
-    if (clean && index < CODE_LENGTH - 1) {
-      inputs.current[index + 1]?.focus();
+    if (cleaned) {
+      haptics.tap();
+      if (index < CODE_LENGTH - 1) {
+        inputs.current[index + 1]?.focus();
+      }
     }
   }
 
@@ -70,10 +95,12 @@ export function OtpScreen({ route, navigation }: Props) {
       await useSessionStore.getState().setAccessTokenOnly(accessToken);
       const me = await authApi.me();
       await signIn(accessToken, me);
+      haptics.success();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Erreur de vérification, réessaie.");
       setDigits(Array(CODE_LENGTH).fill(""));
       playShake();
+      haptics.error();
       inputs.current[0]?.focus();
     } finally {
       setLoading(false);
@@ -113,7 +140,9 @@ export function OtpScreen({ route, navigation }: Props) {
             onFocus={() => setFocusedIndex(i)}
             onBlur={() => setFocusedIndex((prev) => (prev === i ? null : prev))}
             keyboardType="number-pad"
-            maxLength={1}
+            textContentType="oneTimeCode"
+            autoComplete="sms-otp"
+            maxLength={i === 0 ? CODE_LENGTH : 1}
             style={[
               styles.digitBox,
               digit ? styles.digitBoxFilled : undefined,

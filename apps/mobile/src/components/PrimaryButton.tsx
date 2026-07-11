@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text } from "react-native";
 import { colors, radii, shadows, spacing, typography } from "../theme/theme";
+import { haptics } from "../utils/haptics";
 
 interface Props {
   label: string;
@@ -22,7 +23,11 @@ export function PrimaryButton({ label, onPress, disabled, loading }: Props) {
       <Pressable
         onPress={onPress}
         disabled={isInactive}
-        onPressIn={() => !isInactive && animateTo(0.97)}
+        onPressIn={() => {
+          if (isInactive) return;
+          animateTo(0.97);
+          haptics.tap();
+        }}
         onPressOut={() => animateTo(1)}
         style={[styles.button, isInactive && styles.disabled]}
       >

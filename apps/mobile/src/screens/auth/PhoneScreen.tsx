@@ -16,13 +16,16 @@ import { CountryPickerModal } from "../../components/CountryPickerModal";
 import { FormInput } from "../../components/FormInput";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { colors, radii, shadows, spacing, typography } from "../../theme/theme";
-import { DEFAULT_COUNTRY, formatPhoneForDisplay, type Country } from "../../utils/countries";
+import { detectDefaultCountry, formatPhoneForDisplay, type Country } from "../../utils/countries";
+import { haptics } from "../../utils/haptics";
 import type { AuthStackParamList } from "../../navigation/types";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Phone">;
 
 export function PhoneScreen({ navigation }: Props) {
-  const [country, setCountry] = useState<Country>(DEFAULT_COUNTRY);
+  // Présélectionne le pays d'après la locale de l'appareil (comme WhatsApp/Telegram)
+  // plutôt qu'un indicatif fixe.
+  const [country, setCountry] = useState<Country>(() => detectDefaultCountry());
   const [phone, setPhone] = useState("");
   const [pickerVisible, setPickerVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -83,7 +86,13 @@ export function PhoneScreen({ navigation }: Props) {
 
           <Text style={styles.label}>TON NUMÉRO DE TÉLÉPHONE</Text>
           <View style={styles.phoneRow}>
-            <Pressable style={styles.countryPill} onPress={() => setPickerVisible(true)}>
+            <Pressable
+              style={styles.countryPill}
+              onPress={() => {
+                haptics.tap();
+                setPickerVisible(true);
+              }}
+            >
               <Text style={styles.flag}>{country.flag}</Text>
               <Text style={styles.dialCode}>{country.dialCode}</Text>
               <Text style={styles.chevron}>▾</Text>
@@ -93,6 +102,8 @@ export function PhoneScreen({ navigation }: Props) {
               onChangeText={(v) => setPhone(formatPhoneForDisplay(v))}
               placeholder="6 12 34 56 78"
               keyboardType="phone-pad"
+              returnKeyType="done"
+              onSubmitEditing={handleSubmit}
               style={styles.phoneInput}
               autoFocus
             />

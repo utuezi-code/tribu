@@ -113,6 +113,16 @@ Ce fichier documente les choix faits pour des points non couverts explicitement 
 - **Choix** : extraction d'un composant `FormInput` (`src/components/FormInput.tsx`) réutilisé par `PhoneScreen` et `CreateEventScreen`, avec hauteur fixe (52px, alignée sur la puce pays et les puces de date), état de focus géré par l'app (bordure + halo violet cohérents avec le reste du design) et `outlineStyle: "none"` pour désactiver l'anneau natif du navigateur sur web (extension web-only de react-native-web, absente des types RN standards — cast isolé documenté dans le fichier).
 - **Padding/marges** : augmentés sur `PhoneScreen` (carte, espacement entre sections) et `CreateEventScreen` (padding du conteneur, espacement entre les blocs de formulaire) suite à la demande explicite de l'utilisateur d'aérer ces écrans.
 
+## 2026-07-11 — Patterns UX inspirés d'apps de référence (WhatsApp, Telegram, Revolut/Uber)
+
+- **Constat** : demande explicite de s'inspirer des UX existantes pour l'écran de connexion.
+- **Changements** :
+  - **Présélection du pays par locale de l'appareil** (`expo-localization`, nouvelle dépendance) au lieu d'un indicatif fixe — comportement WhatsApp/Telegram.
+  - **Recherche dans le sélecteur de pays** (par nom ou indicatif, insensible aux accents/casse) — nécessaire dès que la liste dépasse une poignée d'entrées, pattern universel des sélecteurs de pays.
+  - **Autofill SMS natif** : `textContentType="oneTimeCode"` (iOS) / `autoComplete="sms-otp"` (Android) sur les cases de code, avec correction de la logique de saisie pour distribuer correctement un code collé/auto-rempli d'un coup sur plusieurs cases (auparavant, seul le dernier caractère était conservé — bug qui aurait cassé l'autofill natif).
+  - **Retour haptique** (`expo-haptics`, nouvelle dépendance) : léger sur les appuis de bouton et de saisie de code, succès/erreur sur la vérification — pattern tactile "premium" courant sur Uber/Revolut/N26. Désactivé silencieusement si indisponible (web, certains émulateurs) car non essentiel au fonctionnement.
+- **Portée** : concentré sur le flux de connexion (Phone + OTP), qui est l'écran signalé par l'utilisateur. Le retour haptique sur `PrimaryButton` bénéficie cependant à tous les écrans qui l'utilisent déjà.
+
 ---
 
 *Ce fichier sera complété au fil du développement.*
