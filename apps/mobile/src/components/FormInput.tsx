@@ -1,15 +1,7 @@
 import { useState } from "react";
-import { StyleSheet, TextInput, type TextInputProps, type TextStyle } from "react-native";
+import { StyleSheet, TextInput, type TextInputProps } from "react-native";
 import { colors, radii, spacing, typography } from "../theme/theme";
-
-/**
- * RN Web applique un anneau de focus natif du navigateur (carré, décalé du
- * borderRadius) qui rendait le champ "bizarre" en plus de notre propre style
- * de focus. `outlineStyle` n'existe pas dans les types RN standards (c'est
- * une extension web-only de react-native-web) : cast isolé plutôt que
- * d'affaiblir le typage du reste du composant.
- */
-const webNoOutline = { outlineStyle: "none" } as unknown as TextStyle;
+import { webNoOutline } from "../utils/webStyles";
 
 export function FormInput({ style, onFocus, onBlur, ...rest }: TextInputProps) {
   const [focused, setFocused] = useState(false);

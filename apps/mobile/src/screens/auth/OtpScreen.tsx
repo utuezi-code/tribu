@@ -7,6 +7,7 @@ import { PrimaryButton } from "../../components/PrimaryButton";
 import { useSessionStore } from "../../store/session.store";
 import { colors, radii, spacing, typography } from "../../theme/theme";
 import { haptics } from "../../utils/haptics";
+import { webNoOutline } from "../../utils/webStyles";
 import type { AuthStackParamList } from "../../navigation/types";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "OtpVerification">;
@@ -147,6 +148,7 @@ export function OtpScreen({ route, navigation }: Props) {
               styles.digitBox,
               digit ? styles.digitBoxFilled : undefined,
               focusedIndex === i ? styles.digitBoxFocused : undefined,
+              webNoOutline,
             ]}
             autoFocus={i === 0}
           />
@@ -173,22 +175,22 @@ export function OtpScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0F0B1E", padding: spacing.lg, paddingTop: spacing.xl * 1.5 },
+  container: { flex: 1, backgroundColor: colors.surface, padding: spacing.lg, paddingTop: spacing.xl * 1.5 },
   backButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#1B1630",
+    backgroundColor: colors.background,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: spacing.lg,
   },
-  backIcon: { color: "#fff", fontSize: 22, marginTop: -2 },
+  backIcon: { color: colors.text, fontSize: 22, marginTop: -2 },
   stepsRow: { flexDirection: "row", gap: 6, marginBottom: spacing.md },
-  stepDotDone: { width: 20, height: 4, borderRadius: 2, backgroundColor: "#4A4166" },
+  stepDotDone: { width: 20, height: 4, borderRadius: 2, backgroundColor: colors.border },
   stepDotActive: { width: 28, height: 4, borderRadius: 2, backgroundColor: colors.primary },
-  title: { ...typography.title, color: "#fff" },
-  subtitle: { ...typography.body, color: "#A9A3C2", marginTop: spacing.xs },
+  title: { ...typography.title, color: colors.text },
+  subtitle: { ...typography.body, color: colors.textSecondary, marginTop: spacing.xs },
   editNumber: { ...typography.caption, color: colors.primary, fontWeight: "700", marginTop: spacing.xs },
   digitsRow: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.xl },
   digitBox: {
@@ -196,9 +198,9 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: radii.md,
     borderWidth: 1.5,
-    borderColor: "#332C4D",
-    backgroundColor: "#1B1630",
-    color: "#fff",
+    borderColor: colors.border,
+    backgroundColor: colors.background,
+    color: colors.text,
     textAlign: "center",
     fontSize: 22,
     fontWeight: "700",
@@ -207,12 +209,12 @@ const styles = StyleSheet.create({
   digitBoxFocused: {
     borderColor: colors.primary,
     shadowColor: colors.primary,
-    shadowOpacity: 0.6,
+    shadowOpacity: 0.35,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 0 },
   },
   error: { ...typography.caption, color: colors.danger, marginTop: spacing.md },
   resendPill: { alignSelf: "flex-start", marginTop: spacing.lg },
-  resend: { ...typography.body, color: "#68607F" },
+  resend: { ...typography.body, color: colors.textMuted },
   resendActive: { color: colors.primary, fontWeight: "700" },
 });

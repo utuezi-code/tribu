@@ -123,6 +123,12 @@ Ce fichier documente les choix faits pour des points non couverts explicitement 
   - **Retour haptique** (`expo-haptics`, nouvelle dépendance) : léger sur les appuis de bouton et de saisie de code, succès/erreur sur la vérification — pattern tactile "premium" courant sur Uber/Revolut/N26. Désactivé silencieusement si indisponible (web, certains émulateurs) car non essentiel au fonctionnement.
 - **Portée** : concentré sur le flux de connexion (Phone + OTP), qui est l'écran signalé par l'utilisateur. Le retour haptique sur `PrimaryButton` bénéficie cependant à tous les écrans qui l'utilisent déjà.
 
+## 2026-07-11 — Écran code SMS : fond blanc (demande explicite utilisateur)
+
+- **Constat** : l'écran de vérification du code SMS était en thème sombre (fidèle aux maquettes fournies). L'utilisateur a explicitement demandé un arrière-plan blanc, cohérent avec le reste de l'app — ceci prime sur la maquette d'origine.
+- **Changement** : `OtpScreen` passe en thème clair (`colors.surface`/`colors.background`/`colors.text` au lieu des couleurs sombres codées en dur).
+- **Effet de bord corrigé au passage** : l'anneau de focus noir par défaut du navigateur (RN Web), déjà corrigé sur `FormInput`, était encore présent sur les cases de code (qui utilisent un `TextInput` brut, pas `FormInput`) et devenait très visible sur fond blanc. Extrait `webNoOutline` dans `src/utils/webStyles.ts` (partagé par `FormInput` et `OtpScreen`) pour éviter la duplication future.
+
 ---
 
 *Ce fichier sera complété au fil du développement.*
