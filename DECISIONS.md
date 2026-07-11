@@ -135,6 +135,12 @@ Ce fichier documente les choix faits pour des points non couverts explicitement 
 - **Choix** : formalisation en outil de dev committé (`npm run mock` dans `apps/backend`) du serveur HTTP minimal (Node natif, aucune dépendance) déjà utilisé pour générer les captures d'écran pendant cette session. Implémente les mêmes routes que l'API réelle avec des données en mémoire (réinitialisées à chaque redémarrage), OTP accepté sans vérification, et un endpoint d'upload factice qui accepte n'importe quel fichier sans le stocker.
 - **Limites explicites (documentées dans le README)** : ce n'est pas un environnement de test fonctionnel — les règles métier (verrouillage à l'archivage, validation OTP réelle, JWT signé, persistance) ne sont pas appliquées. Usage strictement réservé à la vérification visuelle de l'UI.
 
+## 2026-07-11 — Écran "Membres" (liste des participants)
+
+- **Constat** : le brief/les maquettes n'incluent pas d'écran dédié pour consulter la liste des membres d'un événement (seule une pile d'avatars était visible en en-tête, non interactive). L'utilisateur a demandé explicitement cette fonctionnalité.
+- **Choix** : nouvel écran `EventMembersScreen` (poussé sur la pile de navigation, pas modal, cohérent avec le reste), accessible en tapant sur le nombre d'amis ou la pile d'avatars dans l'en-tête de `EventDetailScreen`. Liste triée organisateur d'abord puis alphabétique, badge "Organisateur", mention "(toi)" pour l'utilisateur courant.
+- **Portée non traitée** : pas d'action d'invitation ou de retrait de membre depuis cet écran (l'ajout de membres existe déjà via `POST /events/:id/members`, exposé uniquement à la création de l'événement pour l'instant) — à ajouter si demandé.
+
 ---
 
 *Ce fichier sera complété au fil du développement.*

@@ -119,13 +119,18 @@ export function EventDetailScreen({ route, navigation }: Props) {
         <Pressable onPress={() => navigation.goBack()} hitSlop={8}>
           <Text style={styles.back}>‹</Text>
         </Pressable>
-        <View style={styles.headerInfo}>
+        <Pressable
+          style={styles.headerInfo}
+          onPress={() => navigation.navigate("EventMembers", { eventId })}
+        >
           <Text style={styles.eventName} numberOfLines={1}>{event.name}</Text>
           <Text style={styles.eventMeta}>
             {event.members.length} amis · {formatDateRange(event.startDate, event.endDate)}
           </Text>
-        </View>
-        <AvatarStack users={event.members.map((m) => m.user)} max={3} />
+        </Pressable>
+        <Pressable onPress={() => navigation.navigate("EventMembers", { eventId })} hitSlop={8}>
+          <AvatarStack users={event.members.map((m) => m.user)} max={3} />
+        </Pressable>
       </View>
 
       {isArchived && (
