@@ -96,6 +96,17 @@ Ce fichier documente les choix faits pour des points non couverts explicitement 
 - **Choix** : `main` pointe maintenant vers un `index.js` local (`registerRootComponent(App)`), et `react-dom`/`react-native-web`/`@expo/metro-runtime` sont ajoutés pour permettre `npm run web`. Utilisé ici pour valider visuellement les écrans (captures d'écran) sans simulateur iOS/Android disponible dans cet environnement.
 - **Portée** : la cible produit reste iOS/Android natif (`expo start --ios`/`--android`) ; le mode web est un outil de vérification/démo, pas une plateforme livrée.
 
+## 2026-07-11 — Refonte de l'écran de connexion (demande explicite utilisateur)
+
+- **Constat** : l'utilisateur a jugé l'écran de connexion initial (fidèle aux maquettes fournies) insuffisamment abouti et a explicitement demandé une mise à jour vers des tendances UX/UI plus actuelles. Ceci prime sur la consigne générale "n'improvise pas de style" du brief, puisque c'est une instruction directe et postérieure de l'utilisateur sur cet écran précis.
+- **Changements** :
+  - `PhoneScreen` : héro en dégradé (`expo-linear-gradient`, nouvelle dépendance) surmonté d'une carte blanche flottante avec ombre portée, au lieu d'un fond plat.
+  - Sélecteur d'indicatif pays remplacé par une puce pressable ouvrant un bottom-sheet (`CountryPickerModal`) avec une liste de pays, plutôt qu'un champ texte libre propice aux erreurs de saisie.
+  - Numéro de téléphone auto-formaté en groupes ("6 12 34 56 78") via `formatPhoneForDisplay`.
+  - Bouton principal en pilule avec ombre colorée et micro-animation d'appui (scale), réutilisé partout via `PrimaryButton`.
+  - `OtpScreen` : indicateur d'étapes (2 points), lien "Modifier le numéro" pour revenir en arrière, cases de code avec halo lumineux sur la case active, et animation de secousse (shake) en cas de code invalide.
+- **Portée non traitée** : pas de mode sombre système ni de nouvelle refonte des autres écrans (Accueil, Création d'événement, etc.) — cette itération se limite à l'écran de connexion signalé par l'utilisateur. À élargir sur demande.
+
 ---
 
 *Ce fichier sera complété au fil du développement.*

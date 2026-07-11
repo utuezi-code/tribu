@@ -21,6 +21,25 @@ export const colors = {
   bubbleReceived: "#FFFFFF",
   overlayDark: "rgba(20, 16, 40, 0.55)",
   avatarPalette: ["#F2A7B0", "#8CD8C8", "#9FB4F2", "#F4C88A", "#C9A6F2", "#7FD1E0"],
+  gradientAuth: ["#8F7CFA", "#6D5AF0", "#4C3ED9"],
+  glow: "rgba(123, 110, 246, 0.35)",
+} as const;
+
+export const shadows = {
+  soft: {
+    shadowColor: "#3B2E7E",
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+  button: {
+    shadowColor: "#5F4FE0",
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
+  },
 } as const;
 
 export const spacing = {
